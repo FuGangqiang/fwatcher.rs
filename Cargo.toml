@@ -1,0 +1,20 @@
+[package]
+name = "fwatcher"
+version = "0.2.0"
+authors = ["FuGangqiang <fu_gangqiang@qq.com>"]
+description = "Auto run command when some files changed."
+repository = "https://github.com/FuGangqiang/fwatcher.rs"
+homepage = "https://github.com/FuGangqiang/fwatcher.rs"
+documentation = "https://fugangqiang.github.io/docs/fwatcher.rs/fwatcher/"
+keywords = ["watcher", "filewatcher", "notify", "restart", "devtools"]
+license = "MIT"
+readme = "README.md"
+
+[[bin]]
+name = "fwatcher"
+doc = false
+
+[dependencies]
+getopts = "0.2"
+glob = "0.2"
+notify = "4.0"

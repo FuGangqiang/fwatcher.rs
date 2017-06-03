@@ -42,13 +42,12 @@ extern crate getopts;
 extern crate glob;
 extern crate notify;
 
+use glob::Pattern;
+use notify::{DebouncedEvent, RecursiveMode, Watcher, watcher};
 use std::path::PathBuf;
-use std::process::{Command, Child};
+use std::process::{Child, Command};
 use std::sync::mpsc::channel;
 use std::time::{Duration, Instant};
-
-use glob::Pattern;
-use notify::{Watcher, RecursiveMode, DebouncedEvent, watcher};
 
 /// a struct save `Fwatcher` state
 pub struct Fwatcher {
@@ -61,15 +60,10 @@ pub struct Fwatcher {
     child: Option<Child>,
 }
 
-
 impl Fwatcher {
     /// Constructs a new `Fwatcher`
-    pub fn new(dirs: Vec<PathBuf>,
-               patterns: Vec<Pattern>,
-               interval: Duration,
-               restart: bool,
-               cmd: Vec<String>)
-               -> Self {
+    pub fn new(dirs: Vec<PathBuf>, patterns: Vec<Pattern>, interval: Duration, restart: bool, cmd: Vec<String>)
+        -> Self {
         Fwatcher {
             dirs: dirs,
             patterns: patterns,
@@ -84,11 +78,11 @@ impl Fwatcher {
     /// run `Fwatcher`
     pub fn run(&mut self) {
         let (tx, rx) = channel();
-        let mut watcher = watcher(tx, Duration::from_millis(500))
-            .expect("can not create a watcher");
+        let mut watcher = watcher(tx, Duration::from_millis(500)).expect("can not create a watcher");
 
         for d in self.dirs.iter() {
-            watcher.watch(d, RecursiveMode::Recursive).expect("can not watch dir");
+            watcher.watch(d, RecursiveMode::Recursive)
+                   .expect("can not watch dir");
         }
         self.restart_child();
 
@@ -98,7 +92,7 @@ impl Fwatcher {
                     if self.interval_consumed() {
                         self.process_event(event)
                     }
-                }
+                },
                 Err(why) => println!("watch error: {:?}", why),
             }
         }
@@ -124,8 +118,8 @@ impl Fwatcher {
                 if self.patterns.iter().any(|ref pat| pat.matches_path(fpath)) {
                     self.restart_child();
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
     }
 

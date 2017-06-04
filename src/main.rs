@@ -26,6 +26,12 @@ fn main() {
              "<pattern>",
              HasArg::Yes,
              Occur::Multi);
+    opts.opt("P",
+             "exclude_pattern",
+             "Watch file glob pattern exclusively, default null",
+             "<exclude_pattern>",
+             HasArg::Yes,
+             Occur::Multi);
     opts.opt("i",
              "interval",
              "Interval in seconds to scan filesystem, default to 1",
@@ -70,6 +76,11 @@ fn main() {
     if patterns.is_empty() {
         patterns.push(Pattern::new("*").unwrap());
     }
+    let exclude_patterns: Vec<_> =
+        matches.opt_strs("exclude_pattern")
+               .iter()
+               .map(|dir| Pattern::new(dir).expect("create pattern error"))
+               .collect();
     let interval = matches.opt_str("interval")
                           .map(|i| i.parse().expect("parse interval option error"))
                           .or(Some(1))
@@ -78,6 +89,7 @@ fn main() {
     let restart = matches.opt_present("restart");
     let mut fwatcher = Fwatcher::new(dirs, cmd);
     fwatcher.patterns(&patterns)
+            .exclude_patterns(&exclude_patterns)
             .interval(interval)
             .restart(restart)
             .run();

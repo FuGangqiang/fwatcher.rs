@@ -28,6 +28,9 @@
 //!
 //!     let mut fwatcher = Fwatcher::new(dirs, cmd);
 //!     fwatcher.pattern(Pattern::new("**/*.py").unwrap())
+//!             .pattern(Pattern::new("**/*.js").unwrap())
+//!             .exclude_pattern(Pattern::new("**/.git/**").unwrap())
+//!             .exclude_pattern(Pattern::new("**/.gitignore").unwrap())
 //!             .interval(Duration::new(1, 0))
 //!             .restart(false)
 //!             .run();
@@ -53,6 +56,7 @@ use std::time::{Duration, Instant};
 pub struct Fwatcher {
     dirs: Vec<PathBuf>,
     patterns: Vec<Pattern>,
+    exclude_patterns: Vec<Pattern>,
     interval: Duration,
     restart: bool,
     cmd: Vec<String>,
@@ -66,6 +70,7 @@ impl Fwatcher {
         Fwatcher {
             dirs: dirs,
             patterns: Vec::new(),
+            exclude_patterns: Vec::new(),
             interval: Duration::new(1, 0),
             restart: false,
             cmd: cmd,
@@ -83,6 +88,18 @@ impl Fwatcher {
     /// add watcher patterns
     pub fn patterns(&mut self, pats: &[Pattern]) -> &mut Self {
         self.patterns.extend_from_slice(pats);
+        self
+    }
+
+    /// add a watcher exclusive pattern
+    pub fn exclude_pattern(&mut self, pat: Pattern) -> &mut Self {
+        self.exclude_patterns.push(pat);
+        self
+    }
+
+    /// add watcher exclusive patterns
+    pub fn exclude_patterns(&mut self, pats: &[Pattern]) -> &mut Self {
+        self.exclude_patterns.extend_from_slice(pats);
         self
     }
 
@@ -143,8 +160,13 @@ impl Fwatcher {
         match event {
             DebouncedEvent::Write(ref fpath) |
             DebouncedEvent::Create(ref fpath) => {
-                println!("Modified: {:?}", fpath);
-                if self.patterns.iter().any(|ref pat| pat.matches_path(fpath)) {
+                if self.patterns
+                       .iter()
+                       .any(|ref pat| pat.matches_path(fpath)) &&
+                   self.exclude_patterns
+                       .iter()
+                       .all(|ref pat| !pat.matches_path(fpath)) {
+                    println!("Modified: {:?}", fpath);
                     self.restart_child();
                 }
             },

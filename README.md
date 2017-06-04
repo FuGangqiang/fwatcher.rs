@@ -32,6 +32,8 @@ Options:
                         Watch directory, default to current directory
     -p, --pattern <pattern>
                         Watch file glob pattern, default to "*"
+    -P, --exclude_pattern <exclude_pattern>
+                        Watch file glob pattern exclusively, default null
     -i, --interval <second>
                         Interval in seconds to scan filesystem, default to 1
 ```
@@ -88,6 +90,9 @@ fn main() {
 
     let mut fwatcher = Fwatcher::new(dirs, cmd);
     fwatcher.pattern(Pattern::new("**/*.py").unwrap())
+            .pattern(Pattern::new("**/*.js").unwrap())
+            .exclude_pattern(Pattern::new("**/.git/**").unwrap())
+            .exclude_pattern(Pattern::new("**/.gitignore").unwrap())
             .interval(Duration::new(1, 0))
             .restart(false)
             .run();

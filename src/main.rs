@@ -29,7 +29,7 @@ fn main() {
     opts.opt("i",
              "interval",
              "Interval in seconds to scan filesystem, default to 1",
-             "<pattern>",
+             "<second>",
              HasArg::Yes,
              Occur::Optional);
 

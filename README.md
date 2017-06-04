@@ -32,7 +32,7 @@ Options:
                         Watch directory, default to current directory
     -p, --pattern <pattern>
                         Watch file glob pattern, default to "*"
-    -i, --interval <pattern>
+    -i, --interval <second>
                         Interval in seconds to scan filesystem, default to 1
 ```
 

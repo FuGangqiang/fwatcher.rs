@@ -90,9 +90,7 @@ fn main() {
 
     let mut fwatcher = Fwatcher::new(dirs, cmd);
     fwatcher.pattern(Pattern::new("**/*.py").unwrap())
-            .pattern(Pattern::new("**/*.js").unwrap())
             .exclude_pattern(Pattern::new("**/.git/**").unwrap())
-            .exclude_pattern(Pattern::new("**/.gitignore").unwrap())
             .interval(Duration::new(1, 0))
             .restart(false)
             .run();

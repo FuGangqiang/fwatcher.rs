@@ -51,7 +51,7 @@ you can also use more than one directory/pattern option:
 fwatcher -d src -d test -p "**/*.py" -p "**/*.html" "pytest"
 ```
 
-The --restart option kills the command
+The `--restart` option kills the command
 if it's still running when a filesystem change happens.
 Can be used to restart locally running webservers on updates,
 or kill long running tests and restart on updates:

@@ -24,19 +24,19 @@
 //!
 //! fn main() {
 //!     let dirs =vec![PathBuf::from("src")];
-//!     let patterns = vec![Pattern::new("**/*.py").unwrap()];
-//!     let interval =  Duration::new(1, 0);
-//!     let restart = false;
 //!     let cmd = vec!["pytest".to_string()];
 //!
-//!     let mut fwatcher = Fwatcher::new(dirs, patterns, interval, restart, cmd);
-//!     fwatcher.run();
+//!     let mut fwatcher = Fwatcher::new(dirs, cmd);
+//!     fwatcher.pattern(Pattern::new("**/*.py").unwrap())
+//!             .interval(Duration::new(1, 0))
+//!             .restart(false)
+//!             .run();
 //! }
 //! ```
 
 #![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-       html_root_url = "https://fugangqiang.github.io/docs/fwatcher.rs/fwatcher/")]
+       html_root_url = "https://docs.rs/fwatcher")]
 
 extern crate getopts;
 extern crate glob;
@@ -62,17 +62,40 @@ pub struct Fwatcher {
 
 impl Fwatcher {
     /// Constructs a new `Fwatcher`
-    pub fn new(dirs: Vec<PathBuf>, patterns: Vec<Pattern>, interval: Duration, restart: bool, cmd: Vec<String>)
-        -> Self {
+    pub fn new(dirs: Vec<PathBuf>, cmd: Vec<String>) -> Self {
         Fwatcher {
             dirs: dirs,
-            patterns: patterns,
-            interval: interval,
-            restart: restart,
+            patterns: Vec::new(),
+            interval: Duration::new(1, 0),
+            restart: false,
             cmd: cmd,
             last_run: None,
             child: None,
         }
+    }
+
+    /// add a watcher pattern
+    pub fn pattern(&mut self, pat: Pattern) -> &mut Self {
+        self.patterns.push(pat);
+        self
+    }
+
+    /// add watcher patterns
+    pub fn patterns(&mut self, pats: &[Pattern]) -> &mut Self {
+        self.patterns.extend_from_slice(pats);
+        self
+    }
+
+    /// set watcher interval seconds
+    pub fn interval(&mut self, d: Duration) -> &mut Self {
+        self.interval = d;
+        self
+    }
+
+    /// set watcher restart flag
+    pub fn restart(&mut self, flag: bool) -> &mut Self {
+        self.restart = flag;
+        self
     }
 
     /// run `Fwatcher`
@@ -80,9 +103,15 @@ impl Fwatcher {
         let (tx, rx) = channel();
         let mut watcher = watcher(tx, Duration::from_millis(500)).expect("can not create a watcher");
 
-        for d in self.dirs.iter() {
-            watcher.watch(d, RecursiveMode::Recursive)
+        if self.dirs.is_empty() {
+            watcher.watch(::std::env::current_dir().expect("get current dir error"),
+                          RecursiveMode::Recursive)
                    .expect("can not watch dir");
+        } else {
+            for d in self.dirs.iter() {
+                watcher.watch(d, RecursiveMode::Recursive)
+                       .expect("can not watch dir");
+            }
         }
         self.restart_child();
 

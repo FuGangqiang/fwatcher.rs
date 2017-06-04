@@ -13,7 +13,7 @@ fn main() {
     let mut opts = Options::new();
     opts.optflag("h", "help", "Display this message");
     opts.optflag("v", "version", "Print version info");
-    opts.optflag("r", "restart", "Auto restart command");
+    opts.optflag("r", "restart", "Auto restart command, default to false");
     opts.opt("d",
              "directory",
              "Watch directory, default to current directory",
@@ -54,19 +54,20 @@ fn main() {
         process::exit(1);
     }
 
-    let mut dirs: Vec<_> = matches.opt_strs("directory")
-                                  .iter()
-                                  .map(|dir| PathBuf::from(dir))
-                                  .collect();
-    if dirs.len() == 0 {
-        dirs.push(env::current_dir().unwrap());
-    }
+    let dirs: Vec<_> = matches.opt_strs("directory")
+                              .iter()
+                              .map(|dir| PathBuf::from(dir))
+                              .collect();
+    let cmd: Vec<String> = matches.free[0]
+        .split_whitespace()
+        .map(|s| s.to_string())
+        .collect();
     let mut patterns: Vec<_> =
         matches.opt_strs("pattern")
                .iter()
                .map(|dir| Pattern::new(dir).expect("create pattern error"))
                .collect();
-    if patterns.len() == 0 {
+    if patterns.is_empty() {
         patterns.push(Pattern::new("*").unwrap());
     }
     let interval = matches.opt_str("interval")
@@ -75,13 +76,11 @@ fn main() {
                           .map(|i| Duration::new(i, 0))
                           .unwrap();
     let restart = matches.opt_present("restart");
-    let cmd: Vec<String> = matches.free[0]
-        .split(' ')
-        .map(|s| s.to_string())
-        .collect();
-
-    let mut fwatcher = Fwatcher::new(dirs, patterns, interval, restart, cmd);
-    fwatcher.run();
+    let mut fwatcher = Fwatcher::new(dirs, cmd);
+    fwatcher.patterns(&patterns)
+            .interval(interval)
+            .restart(restart)
+            .run();
 }
 
 fn print_usage(opts: Options) {

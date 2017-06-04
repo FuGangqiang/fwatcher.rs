@@ -27,7 +27,7 @@ Usage:
 Options:
     -h, --help          Display this message
     -v, --version       Print version info
-    -r, --restart       Auto restart command
+    -r, --restart       Auto restart command, default to false
     -d, --directory <dir>
                         Watch directory, default to current directory
     -p, --pattern <pattern>
@@ -84,12 +84,12 @@ use std::time::Duration;
 
 fn main() {
     let dirs =vec![PathBuf::from("src")];
-    let patterns = vec![Pattern::new("**/*.py").unwrap()];
-    let interval =  Duration::new(1, 0);
-    let restart = false;
     let cmd = vec!["pytest".to_string()];
 
-    let mut fwatcher = Fwatcher::new(dirs, patterns, interval, restart, cmd);
-    fwatcher.run();
+    let mut fwatcher = Fwatcher::new(dirs, cmd);
+    fwatcher.pattern(Pattern::new("**/*.py").unwrap())
+            .interval(Duration::new(1, 0))
+            .restart(false)
+            .run();
 }
 ```

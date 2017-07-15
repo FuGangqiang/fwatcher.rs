@@ -42,13 +42,13 @@ For example to search recursively for python files in the current directory
 and run pytest when a file is updated:
 
 ```
-fwatcher -p "**/*.py" "pytest"
+fwatcher -p "**/*.py" pytest --maxfail=2
 ```
 
 you can also use more than one directory/pattern option:
 
 ```
-fwatcher -d src -d test -p "**/*.py" -p "**/*.html" "pytest"
+fwatcher -d src -d test -p "**/*.py" -p "**/*.html" pytest --maxfail=2
 ```
 
 The `--restart` option kills the command
@@ -57,7 +57,7 @@ Can be used to restart locally running webservers on updates,
 or kill long running tests and restart on updates:
 
 ```
-fwatcher -d src -p "**/*.py" --restart "run_forever_cmd"
+fwatcher -d src -p "**/*.py" --restart run_forever_cmd
 ```
 
 

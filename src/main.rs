@@ -3,7 +3,7 @@ extern crate getopts;
 extern crate fwatcher;
 
 use fwatcher::Fwatcher;
-use getopts::{HasArg, Occur, Options};
+use getopts::{HasArg, Occur, Options, ParsingStyle};
 use glob::Pattern;
 use std::{env, process};
 use std::path::PathBuf;
@@ -11,6 +11,7 @@ use std::time::Duration;
 
 fn main() {
     let mut opts = Options::new();
+    opts.parsing_style(ParsingStyle::StopAtFirstFree);
     opts.optflag("h", "help", "Display this message");
     opts.optflag("v", "version", "Print version info");
     opts.optflag("r", "restart", "Auto restart command, default to false");
@@ -55,7 +56,7 @@ fn main() {
     } else if matches.opt_present("v") {
         println!("fwatcher {}", env!("CARGO_PKG_VERSION"));
         process::exit(0);
-    } else if matches.free.len() != 1 {
+    } else if matches.free.len() == 0 {
         print_usage(opts);
         process::exit(1);
     }
@@ -64,10 +65,6 @@ fn main() {
                               .iter()
                               .map(|dir| PathBuf::from(dir))
                               .collect();
-    let cmd: Vec<String> = matches.free[0]
-        .split_whitespace()
-        .map(|s| s.to_string())
-        .collect();
     let mut patterns: Vec<_> =
         matches.opt_strs("pattern")
                .iter()
@@ -87,7 +84,7 @@ fn main() {
                           .map(|i| Duration::new(i, 0))
                           .unwrap();
     let restart = matches.opt_present("restart");
-    let mut fwatcher = Fwatcher::new(dirs, cmd);
+    let mut fwatcher = Fwatcher::new(dirs, matches.free);
     fwatcher.patterns(&patterns)
             .exclude_patterns(&exclude_patterns)
             .interval(interval)

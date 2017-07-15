@@ -1,5 +1,7 @@
 //! Auto run command when some files changed.
 //!
+//! `fwatcher` also has a [cli command](./cli/index.html).
+//!
 //! # Usage
 //!
 //! Dependencies in your project's `Cargo.toml`:
@@ -49,6 +51,8 @@ use std::path::PathBuf;
 use std::process::{Child, Command};
 use std::sync::mpsc::channel;
 use std::time::{Duration, Instant};
+
+pub mod cli;
 
 /// a struct save `Fwatcher` state
 pub struct Fwatcher {

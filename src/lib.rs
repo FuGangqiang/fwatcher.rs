@@ -168,8 +168,10 @@ impl Fwatcher {
 
     fn process_event(&mut self, event: DebouncedEvent) {
         match event {
-            DebouncedEvent::Write(ref fpath) |
-            DebouncedEvent::Create(ref fpath) => {
+            DebouncedEvent::Create(ref fpath) |
+            DebouncedEvent::Write(ref fpath)  |
+            DebouncedEvent::Remove(ref fpath) |
+            DebouncedEvent::Rename(ref fpath, _) => {
                 if self.patterns
                        .iter()
                        .any(|ref pat| pat.matches_path(fpath)) &&

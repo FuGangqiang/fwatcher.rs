@@ -50,21 +50,19 @@ fn main() {
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
         Err(why) => {
-            println!("{}", why);
-            println!("run `fwatcher -h` to get the usage.");
+            eprintln!("{}", why);
+            eprintln!("run `fwatcher -h` to get the usage.");
             process::exit(1);
         },
     };
 
     if matches.opt_present("h") {
-        print_usage(opts);
-        process::exit(0);
+        print_usage_and_exit(opts, 0);
     } else if matches.opt_present("v") {
         println!("fwatcher {}", env!("CARGO_PKG_VERSION"));
         process::exit(0);
     } else if matches.free.len() == 0 {
-        print_usage(opts);
-        process::exit(1);
+        print_usage_and_exit(opts, 1);
     }
 
     let dirs: Vec<_> = matches.opt_strs("directory")
@@ -104,9 +102,14 @@ fn main() {
             .run();
 }
 
-fn print_usage(opts: Options) {
+fn print_usage_and_exit(opts: Options, exit_code: i32) -> ! {
     let brief = "\
 Usage:
     fwatcher [options] CMD";
-    print!("{}", opts.usage(brief));
+    if exit_code == 0 {
+        print!("{}", opts.usage(brief));
+    } else {
+        eprint!("{}", opts.usage(brief));
+    }
+    process::exit(exit_code);
 }

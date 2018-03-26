@@ -29,6 +29,8 @@
 //!                         Watch file glob pattern, default to "*"
 //!     -P, --exclude_pattern <exclude_pattern>
 //!                         Watch file glob pattern exclusively, default null
+//!         --delay <second>
+//!                        Delay in seconds for watcher, default to 2
 //!     -i, --interval <second>
 //!                         Interval in seconds to scan filesystem, default to 1
 //! ```

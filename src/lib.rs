@@ -59,6 +59,7 @@ pub struct Fwatcher {
     dirs: Vec<PathBuf>,
     patterns: Vec<Pattern>,
     exclude_patterns: Vec<Pattern>,
+    delay: Duration,
     interval: Duration,
     restart: bool,
     cmd: Vec<String>,
@@ -73,6 +74,7 @@ impl Fwatcher {
             dirs: dirs,
             patterns: Vec::new(),
             exclude_patterns: Vec::new(),
+            delay: Duration::new(2, 0),
             interval: Duration::new(1, 0),
             restart: false,
             cmd: cmd,
@@ -106,6 +108,12 @@ impl Fwatcher {
     }
 
     /// set watcher interval seconds
+    pub fn delay(&mut self, d: Duration) -> &mut Self {
+        self.delay = d;
+        self
+    }
+
+    /// set watcher interval seconds
     pub fn interval(&mut self, d: Duration) -> &mut Self {
         self.interval = d;
         self
@@ -120,7 +128,7 @@ impl Fwatcher {
     /// run `Fwatcher`
     pub fn run(&mut self) {
         let (tx, rx) = channel();
-        let mut watcher = watcher(tx, Duration::from_millis(500)).expect("can not create a watcher");
+        let mut watcher = watcher(tx, self.delay).expect("can not create a watcher");
 
         if self.dirs.is_empty() {
             watcher.watch(::std::env::current_dir().expect("get current dir error"),

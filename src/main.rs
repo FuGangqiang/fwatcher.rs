@@ -33,6 +33,12 @@ fn main() {
              "<exclude_pattern>",
              HasArg::Yes,
              Occur::Multi);
+    opts.opt("",
+             "delay",
+             "Delay in seconds for watcher, default to 2",
+             "<second>",
+             HasArg::Yes,
+             Occur::Optional);
     opts.opt("i",
              "interval",
              "Interval in seconds to scan filesystem, default to 1",
@@ -78,6 +84,11 @@ fn main() {
                .iter()
                .map(|dir| Pattern::new(dir).expect("create pattern error"))
                .collect();
+    let delay = matches.opt_str("delay")
+                       .map(|i| i.parse().expect("parse delay option error"))
+                       .or(Some(2))
+                       .map(|i| Duration::new(i, 0))
+                       .unwrap();
     let interval = matches.opt_str("interval")
                           .map(|i| i.parse().expect("parse interval option error"))
                           .or(Some(1))
@@ -87,6 +98,7 @@ fn main() {
     let mut fwatcher = Fwatcher::new(dirs, matches.free);
     fwatcher.patterns(&patterns)
             .exclude_patterns(&exclude_patterns)
+            .delay(delay)
             .interval(interval)
             .restart(restart)
             .run();
